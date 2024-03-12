@@ -1,0 +1,32 @@
+---
+subway_enabled: false
+
+# Data directory for config file
+subway_data_directory: "{{ docker_home }}/subway"
+
+# Your domain name
+subway_zone: "{{ ansible_nas_domain }}"
+
+# The hostname you want the container to update. You shouldn't need to change this.
+subway_wildcard_domain: "*.{{ subway_zone }}"
+
+# Cloudflare scoped token (https://dash.cloudflare.com/profile/api-tokens)
+# Make sure token permissions include below
+# Permissions:
+  # Zone - DNS - Edit
+# Zone Resources:
+  # Include - Specific Zone - the zone you are using
+
+subway_caddy_acme_dns: "abcdabcdabcd123412341234"
+
+# Subway working mode (cloudflare/caddy)
+subway_mode: cloudflare
+
+# Subway External service (JSON)
+subway_external_service: ""
+
+# specs
+cloudflare_memory: 512MB
+
+# docker
+subway_container_name: subway

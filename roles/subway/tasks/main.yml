@@ -1,0 +1,38 @@
+---
+- name: Start Subway
+  block:
+    - name: Check for deprecated API key
+      ansible.builtin.fail:
+        msg: "Using a Cloudflare global API key is no longer supported. Please unset cloudflare_api_key and set cloudflare_token"
+      when: cloudflare_api_key is defined
+
+    - name: Create cloudflare Dynamic DNS Directories
+      ansible.builtin.file:
+        path: "{{ subway_data_directory }}"
+        state: directory
+
+    - name: Subway Dynamic DNS Container
+      community.docker.docker_container:
+        name: "{{ subway_container_name }}"
+        image: mikeburgh/subway:latest
+        pull: true
+        volumes:
+          - "{{ subway_data_directory }}:/data:rw"
+          - /var/run/docker.sock:/var/run/docker.sock
+        env:
+          - SERVICES: "{{ subway_mode }}"
+          - CADDY_ACME_DNS: "{{ subway_caddy_acme_dns }}"
+          - EXTERNAL_SERVICES: "{{ subway_external_service }}"
+          - CADDY_WILDCARD_DOMAIN: "{{ subway_zone }}"
+        restart_policy: unless-stopped
+        memory: "{{ cloudflare_memory }}"
+        recreate: "{{ template_files_result is changed }}"
+  when: subway_enabled is true
+
+- name: Stop Cloudflare DDNS
+  block:
+    - name: Stop Cloudflare DDNS
+      community.docker.docker_container:
+        name: "{{ subway_container_name }}"
+        state: absent
+  when: subway_enabled is false
